@@ -1,0 +1,51 @@
+# --- Node.js ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# --- Frontend (Client) ---
+client/node_modules/
+client/dist/
+client/dist-ssr/
+client/*.local
+
+# --- Backend (Server) ---
+server/node_modules/
+server/.env
+server/npm
+
+# --- Project Data (Sensitive) ---
+# Ignore local database files to prevent data leaks
+server/data/*.json
+# Keep the directory but ignore generated certificates
+server/public/certificates/*.pdf
+server/public/certificates/*.png
+server/public/certificates/*.jpg
+# Ignore templates if they are large or dynamic
+# server/public/templates/*.pdf
+
+# --- Environment Variables ---
+.env
+.env.production
+.env.local
+.env.*.local
+
+# --- Docker ---
+.dockerignore
+certs/
+vhost.d/
+html/
+
+# --- OS / IDE ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: certificates_backend
+    restart: always
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      # يتم تمرير هذه المتغيرات من ملف .env على السيرفر
+      - VIRTUAL_HOST=${DOMAIN:-localhost}
+      - LETSENCRYPT_HOST=${DOMAIN:-localhost}
+      - VIRTUAL_PORT=5000
+    env_file:
+      - .env
+    volumes:
+      - ./server/data:/app/server/data
+      - ./server/public/certificates:/app/server/public/certificates
+    networks:
+      - web-network
+
+  # ملاحظة: حاويات Nginx Proxy و Let's Encrypt يفضل تشغيلها بشكل منفصل أو فك التعليق أدناه
+  # nginx-proxy:
+  #   image: nginxproxy/nginx-proxy
+  #   container_name: nginx-proxy
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - /var/run/docker.sock:/tmp/docker.sock:ro
+  #     - ./certs:/etc/nginx/certs
+  #     - vhost:/etc/nginx/vhost.d
+  #     - html:/usr/share/nginx/html
+  #   restart: always
+  #   networks:
+  #     - web-network
+
+  # acme-companion:
+  #   image: nginxproxy/acme-companion
+  #   container_name: nginx-proxy-acme
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - ./certs:/etc/nginx/certs
+  #     - vhost:/etc/nginx/vhost.d
+  #     - html:/usr/share/nginx/html
+  #   restart: always
+  #   depends_on:
+  #     - nginx-proxy
+  #   networks:
+  #     - web-network
+
+networks:
+  web-network:
+    external: true

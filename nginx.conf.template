@@ -1,0 +1,26 @@
+server {
+    listen 80;
+    server_name YOUR_DOMAIN_HERE; # استبدل بدومين موقعك
+
+    # تحويل كل طلبات HTTP إلى HTTPS (اختياري بعد تركيب الشهادة)
+    # return 301 https://$host$request_uri;
+
+    location / {
+        proxy_pass http://localhost:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        
+        # إعدادات لرفع الملفات الكبيرة (الشهادات)
+        client_max_body_size 50M;
+    }
+
+    # المسار الخاص بالشهادات للتأكد من سهولة الوصول إليها مباشرة إذا لزم الأمر
+    location /certificates/ {
+        root /var/www/certificates-unified/server/public;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+}

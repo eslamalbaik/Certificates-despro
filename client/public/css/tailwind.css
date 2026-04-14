@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 1. Variable font (covers weight 200–900, slant axis) */
+@font-face {
+  font-family: 'CairoVariable';
+  src: url('/fonts/Cairo-VariableFont_slnt,wght.ttf') format('truetype-variations');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Static fallbacks for maximum compatibility */
+@font-face {
+  font-family: 'Cairo';
+  src: url('/fonts/Cairo-ExtraLight.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face { font-family: 'Cairo'; src: url('/fonts/Cairo-Light.ttf') format('truetype');  font-weight: 300; }
+@font-face { font-family: 'Cairo'; src: url('/fonts/Cairo-Regular.ttf') format('truetype');  font-weight: 400; }
+@font-face { font-family: 'Cairo'; src: url('/fonts/Cairo-Medium.ttf') format('truetype');   font-weight: 500; }
+@font-face { font-family: 'Cairo'; src: url('/fonts/Cairo-SemiBold.ttf') format('truetype'); font-weight: 600; }
+@font-face { font-family: 'Cairo'; src: url('/fonts/Cairo-Bold.ttf') format('truetype');     font-weight: 700; }
+@font-face { font-family: 'Cairo'; src: url('/fonts/Cairo-ExtraBold.ttf') format('truetype');font-weight: 800; }
+@font-face { font-family: 'Cairo'; src: url('/fonts/Cairo-Black.ttf') format('truetype');    font-weight: 900; }
+
+/* 3. Apply it globally */
+html {
+  direction: rtl;
+  font-family: 'CairoVariable', 'Cairo', sans-serif;
+  background-color: #f8fafc; /* Clean light background */
+  color: #1e293b; /* Slate-800 for legibility */
+  overflow-x: hidden;
+}
+
+/* Cinematic Background Gradient */
+.cinematic-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at 80% 70%, rgba(28, 28, 176, 0.05) 0%, transparent 40%),
+              #f8fafc;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.glass-card-green {
+  background: rgba(16, 185, 129, 0.05);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+}
+
+.glass-card-pink {
+  background: rgba(236, 72, 153, 0.05);
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.1);
+}
+
+/* Radiant Glow Animation */
+@keyframes radiant-glow {
+  0% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4), inset 0 0 5px rgba(59, 130, 246, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.8), inset 0 0 10px rgba(59, 130, 246, 0.4); }
+  100% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.4), inset 0 0 5px rgba(59, 130, 246, 0.2); }
+}
+
+.glow-active {
+  animation: radiant-glow 3s infinite ease-in-out;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.3));
+}
+
+/* Digital Particles Animation */
+@keyframes float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  20% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { transform: translateY(-100vh) translateX(20px); opacity: 0; }
+}
+
+.particle {
+  position: absolute;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float 15s infinite linear;
+}
+
+/* 3D Isometric Bar Styles */
+.bar-3d-top {
+  transform: skewX(-45deg);
+  background: rgba(255, 255, 255, 0.2);
+}
+.bar-3d-right {
+  transform: skewY(-45deg);
+  background: rgba(0, 0, 0, 0.1);
+}
