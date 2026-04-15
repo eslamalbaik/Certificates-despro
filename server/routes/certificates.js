@@ -123,8 +123,16 @@ router.post(
       const { traineeName, courseName, trainerName, certificateNumber, issueDate: issueDateInput } = req.body;
 
       // Load template
-      const templatePath = process.env.CERT_TEMPLATE_PATH || fixedTemplate.templatePath;
-      if (!fs.existsSync(templatePath)) return res.status(500).json({ message: "Template not found" });
+      let templatePath = process.env.CERT_TEMPLATE_PATH || fixedTemplate.templatePath;
+      if (templatePath && !path.isAbsolute(templatePath)) {
+        templatePath = path.resolve(__dirname, "..", templatePath);
+      }
+      
+      console.log(`[CertGen] Using template path: ${templatePath}`);
+      if (!fs.existsSync(templatePath)) {
+        console.error(`[CertGen] Template not found at: ${templatePath}`);
+        return res.status(500).json({ message: "Template not found" });
+      }
 
       const templateBytes = fs.readFileSync(templatePath);
       const pdfDoc = await PDFDocument.load(templateBytes);
@@ -132,8 +140,16 @@ router.post(
       const page = pdfDoc.getPages()[0];
 
       // Load Font
-      const fontPath = process.env.ARABIC_FONT_PATH || path.join(__dirname, "..", "fonts", "TraditionalArabic.ttf");
-      if (!fs.existsSync(fontPath)) return res.status(500).json({ message: "Font not found" });
+      let fontPath = process.env.ARABIC_FONT_PATH || path.join(__dirname, "..", "fonts", "TraditionalArabic.ttf");
+      if (fontPath && !path.isAbsolute(fontPath)) {
+        fontPath = path.resolve(__dirname, "..", fontPath);
+      }
+
+      console.log(`[CertGen] Using font path: ${fontPath}`);
+      if (!fs.existsSync(fontPath)) {
+        console.error(`[CertGen] Font not found at: ${fontPath}`);
+        return res.status(500).json({ message: "Font not found" });
+      }
       const fontBytes = fs.readFileSync(fontPath);
       const arabicFont = await pdfDoc.embedFont(fontBytes);
 
