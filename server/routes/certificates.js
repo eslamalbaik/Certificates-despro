@@ -122,46 +122,80 @@ router.post(
 
       const { traineeName, courseName, trainerName, certificateNumber, issueDate: issueDateInput } = req.body;
 
-      // Load template
-      let templatePath = process.env.CERT_TEMPLATE_PATH || fixedTemplate.templatePath;
-      if (templatePath && !path.isAbsolute(templatePath)) {
-        templatePath = path.resolve(__dirname, "..", templatePath);
-      }
+      // Check for duplicate (Same student name and same course)
+      const existing = await Certificate.findOne({ 
+        studentName: traineeName.trim(), 
+        courseName: courseName.trim() 
+      });
       
-      console.log(`[CertGen] Using template path: ${templatePath}`);
-      if (!fs.existsSync(templatePath)) {
-        console.error(`[CertGen] Template not found at: ${templatePath}`);
-        return res.status(500).json({ message: "Template not found" });
+      if (existing) {
+        return res.status(409).json({ 
+          message: "هذه الشهادة موجودة مسبقاً لهذا المتدرب في هذه الدورة",
+          certificate: existing 
+        });
       }
 
-      const templateBytes = fs.readFileSync(templatePath);
-      const pdfDoc = await PDFDocument.load(templateBytes);
+      // Load template (Cached)
+      if (!global.cachedTemplateBytes) {
+        let templatePath = process.env.CERT_TEMPLATE_PATH || fixedTemplate.templatePath;
+        if (templatePath && !path.isAbsolute(templatePath)) {
+          templatePath = path.resolve(__dirname, "..", templatePath);
+        }
+        console.log(`[CertGen] Loading template into cache: ${templatePath}`);
+        if (!fs.existsSync(templatePath)) {
+          console.error(`[CertGen] Template not found at: ${templatePath}`);
+          return res.status(500).json({ message: "Template not found" });
+        }
+        global.cachedTemplateBytes = fs.readFileSync(templatePath);
+      }
+      
+      const pdfDoc = await PDFDocument.load(global.cachedTemplateBytes);
       pdfDoc.registerFontkit(fontkit);
       const page = pdfDoc.getPages()[0];
 
-      // Load Font
-      let fontPath = process.env.ARABIC_FONT_PATH || path.join(__dirname, "..", "fonts", "TraditionalArabic.ttf");
-      if (fontPath && !path.isAbsolute(fontPath)) {
-        fontPath = path.resolve(__dirname, "..", fontPath);
+      // Load Font (Cached)
+      if (!global.cachedFontBytes) {
+        let fontPath = process.env.ARABIC_FONT_PATH || path.join(__dirname, "..", "fonts", "TraditionalArabic.ttf");
+        if (fontPath && !path.isAbsolute(fontPath)) {
+          fontPath = path.resolve(__dirname, "..", fontPath);
+        }
+        console.log(`[CertGen] Loading font into cache: ${fontPath}`);
+        if (!fs.existsSync(fontPath)) {
+          console.error(`[CertGen] Font not found at: ${fontPath}`);
+          return res.status(500).json({ message: "Font not found" });
+        }
+        global.cachedFontBytes = fs.readFileSync(fontPath);
       }
-
-      console.log(`[CertGen] Using font path: ${fontPath}`);
-      if (!fs.existsSync(fontPath)) {
-        console.error(`[CertGen] Font not found at: ${fontPath}`);
-        return res.status(500).json({ message: "Font not found" });
-      }
-      const fontBytes = fs.readFileSync(fontPath);
-      const arabicFont = await pdfDoc.embedFont(fontBytes);
+      const arabicFont = await pdfDoc.embedFont(global.cachedFontBytes);
 
       const blueColor = rgb(36/255, 36/255, 188/255); // #2424bc
 
       const drawRtL = (text, x, y, size, align) => {
-        const shaped = shapeArabic(text);
-        const textWidth = arabicFont.widthOfTextAtSize(shaped, size);
-        let drawX = x;
-        if (align === "right") drawX = x - textWidth;
-        if (align === "center") drawX = x - textWidth / 2;
-        page.drawText(shaped, { x: drawX, y, size, font: arabicFont, color: blueColor });
+        try {
+          const shaped = shapeArabic(text);
+          let textWidth = 0;
+          try {
+            textWidth = arabicFont.widthOfTextAtSize(shaped, size);
+          } catch (e) {
+            console.warn(`[CertGen] Width calculation failed for: "${text}". Using default width.`);
+            textWidth = (text.length * size) / 2; // Rough estimate
+          }
+          
+          let drawX = x;
+          if (align === "right") drawX = x - textWidth;
+          if (align === "center") drawX = x - textWidth / 2;
+          
+          page.drawText(shaped, { 
+            x: drawX, 
+            y, 
+            size, 
+            font: arabicFont, 
+            color: blueColor 
+          });
+        } catch (err) {
+          console.error(`[CertGen] Failed to draw text: "${text}"`, err);
+          // Don't throw, just skip this text to prevent 500 error
+        }
       };
 
       const { coords } = fixedTemplate;
