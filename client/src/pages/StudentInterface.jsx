@@ -19,7 +19,8 @@ import {
   MagnifyingGlassIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/solid";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 import api from "@/configs/api";
 
 const LinkedInIcon = () => (
@@ -34,25 +35,17 @@ const LinkedInIcon = () => (
 );
 
 export default function StudentsInterface() {
-  const [studentId, setStudentId] = useState("");
+  const [searchParams] = useSearchParams();
+  const [studentId, setStudentId] = useState(searchParams.get("certificate") || "");
   const [certificates, setCertificates] = useState([]);
   const [viewMode, setViewMode] = useState("cards");
   const [openDisclaimer, setOpenDisclaimer] = useState(false);
   const [selectedAction, setSelectedAction] = useState({ type: "", url: "", certId: "" });
   const [hasSearched, setHasSearched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
-  function resolveCertificateUrl(cert) {
-    // يختار رابط الشهادة من الحقول المتاحة (Cloudinary)
-    return (
-      cert?.pdfUrl ||
-      cert?.certificateUrl ||
-      cert?.url ||
-      ""
-    );
-  }
-  const handleSearch = async () => {
-    const idTrim = studentId.trim();
+
+  const handleSearch = React.useCallback(async (forcedId) => {
+    const idTrim = (typeof forcedId === "string" ? forcedId : studentId).trim();
     if (!idTrim) return;
 
     setHasSearched(true);
@@ -75,7 +68,24 @@ export default function StudentsInterface() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [studentId]);
+
+  useEffect(() => {
+    const certNum = searchParams.get("certificate");
+    if (certNum) {
+      handleSearch(certNum);
+    }
+  }, [searchParams, handleSearch]);
+  
+  function resolveCertificateUrl(cert) {
+    // يختار رابط الشهادة من الحقول المتاحة (Cloudinary)
+    return (
+      cert?.pdfUrl ||
+      cert?.certificateUrl ||
+      cert?.url ||
+      ""
+    );
+  }
 
   const generateLinkedInUrl = (cert) => {
     const baseUrl = "https://www.linkedin.com/profile/add";
@@ -233,15 +243,12 @@ function triggerDownload(certificateUrl, filename = "certificate.pdf") {
   };
 
   return (
-    <>
+    <div className="bg-white min-h-screen">
       {/* Header with Logo & Title */}
-      <div className="relative h-72 w-full n rounded-xl bg-cover bg-center mt-48">
-        <div className="absolute inset-0 bg-white-900/75" />
+      <div className="relative h-72 w-full rounded-xl bg-white mt-48">
+        <div className="absolute inset-0 bg-white" />
         <div className="absolute inset-0 mb-32 flex flex-col justify-center items-center text-center p-4">
           <img src="/img/logopro.jpg" className="w-40 h-40 lg:w-64 lg:h-64 -mb-12" alt="Logo" />
-          <Typography variant="h5" className="mt-4 text-white font-arabic" style={{ fontWeight: 500, fontStyle: 'normal' }}>
-            المصمم المحترف
-          </Typography>
         </div>
       </div>
 
@@ -502,6 +509,6 @@ function triggerDownload(certificateUrl, filename = "certificate.pdf") {
           </Typography>
         </div>
       </footer>
-    </>
+    </div>
   );
 }

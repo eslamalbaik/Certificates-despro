@@ -128,7 +128,7 @@ export default function GenerateCertificate() {
         pdfUrl: data.pdfUrl,
         verifyUrl:
           data.verificationUrl || data.verifyUrl ||
-          (data.certificateNumber ? `https://desn.pro/verify?certificate=${data.certificateNumber}` : undefined),
+          (data.certificateNumber ? `https://verifydespro.online/?certificate=${data.certificateNumber}` : undefined),
       };
       setResult(normalized);
       if (normalized.pdfUrl) {
@@ -390,12 +390,12 @@ export default function GenerateCertificate() {
                 <div className="space-y-1 md:col-span-2">
                   <div className="text-blue-gray-600 font-arabic">رابط التحقق</div>
                   <a
-                    href={result.verifyUrl || `https://desn.pro/verify?certificate=${result.certificateNumber}`}
+                    href={result.verifyUrl || `https://verifydespro.online/?certificate=${result.certificateNumber}`}
                     className="text-blue-600 underline break-all"
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {result.verifyUrl || `https://desn.pro/verify?certificate=${result.certificateNumber}`}
+                    {result.verifyUrl || `https://verifydespro.online/?certificate=${result.certificateNumber}`}
                   </a>
                 </div>
               </div>

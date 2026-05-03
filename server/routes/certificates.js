@@ -210,9 +210,12 @@ router.post(
       drawRtL(generatedNumber, coords.certificateNumber.x, coords.certificateNumber.y, coords.certificateNumber.size, coords.certificateNumber.align);
       drawRtL(formattedDate, coords.issueDate.x, coords.issueDate.y, coords.issueDate.size, coords.issueDate.align);
 
-      const verificationUrl = `${VERIFY_BASE_URL}?certificate=${generatedNumber}`;
+      const verificationUrl = `https://verifydespro.online/?certificate=${generatedNumber}`;
       if (coords.verificationUrl) {
-          drawRtL(PUBLIC_BASE_URL || "verify", coords.verificationUrl.x, coords.verificationUrl.y, coords.verificationUrl.size, coords.verificationUrl.align);
+          // Draw "للتأكد من صحة الشهادة" label above the URL
+          drawRtL("للتأكد من صحة الشهادة", coords.verificationUrl.x, coords.verificationUrl.y + 25, 12, coords.verificationUrl.align);
+          // Draw the full verification URL
+          drawRtL(verificationUrl, coords.verificationUrl.x, coords.verificationUrl.y, 12, coords.verificationUrl.align);
       }
 
       const pdfBytes = await pdfDoc.save();
