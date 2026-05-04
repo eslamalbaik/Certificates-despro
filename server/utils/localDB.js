@@ -126,6 +126,23 @@ class LocalCollection {
     return removed[0];
   }
 
+  async deleteMany(query = {}) {
+    let results = this._read();
+    if (Object.keys(query).length === 0) {
+      this._write([]);
+      return { deletedCount: results.length };
+    }
+    const initialCount = results.length;
+    results = results.filter(item => {
+      for (const key in query) {
+        if (item[key] !== query[key]) return true;
+      }
+      return false;
+    });
+    this._write(results);
+    return { deletedCount: initialCount - results.length };
+  }
+
   async create(data) {
     const results = this._read();
     const self = this;

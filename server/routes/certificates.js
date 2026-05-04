@@ -270,6 +270,37 @@ router.get("/search", async (req, res) => {
   }
 });
 
+router.delete("/", auth, async (req, res) => {
+  try {
+    // We need to delete files from disk first
+    const certs = await Certificate.find({});
+    for (const cert of certs) {
+      await removeCertificateAssets(cert);
+    }
+    
+    await Certificate.deleteMany({});
+    res.json({ message: "تم حذف جميع الشهادات والملفات بنجاح" });
+  } catch (err) {
+    console.error("Delete all error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.delete("/student/:studentId", auth, async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const certs = await Certificate.find({ studentId });
+    for (const cert of certs) {
+      await removeCertificateAssets(cert);
+    }
+    await Certificate.deleteMany({ studentId });
+    res.json({ message: "تم حذف شهادات الطالب بنجاح" });
+  } catch (err) {
+    console.error("Delete student certs error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 router.delete("/:id", auth, async (req, res) => {
   try {
     const cert = await Certificate.findById(req.params.id);

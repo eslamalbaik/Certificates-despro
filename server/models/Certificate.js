@@ -9,6 +9,7 @@ const Certificate = {
   create: (data) => collection.create(data),
   countDocuments: (query) => collection.countDocuments(query),
   deleteOne: (query) => collection.deleteOne(query),
+  deleteMany: (query) => collection.deleteMany(query),
   distinct: (field) => collection.distinct(field),
   findByIdAndUpdate: (id, update) => collection.findByIdAndUpdate(id, update),
 };
