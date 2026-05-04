@@ -212,8 +212,6 @@ router.post(
 
       const verificationUrl = `https://verifydespro.online/?certificate=${generatedNumber}`;
       if (coords.verificationUrl) {
-          // Draw "للتأكد من صحة الشهادة" label above the URL
-          drawRtL("للتأكد من صحة الشهادة", coords.verificationUrl.x, coords.verificationUrl.y + 25, 12, coords.verificationUrl.align);
           // Draw the full verification URL
           drawRtL(verificationUrl, coords.verificationUrl.x, coords.verificationUrl.y, 12, coords.verificationUrl.align);
       }
