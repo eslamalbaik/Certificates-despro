@@ -68,19 +68,29 @@ export default function GenerateCertificate() {
         const wb = XLSX.read(bstr, { type: "binary" });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];
-        const data = XLSX.utils.sheet_to_json(ws);
+
+        // Some sheets have a title row above the real headers. Scan the first
+        // few rows to find the one that actually contains recognizable column names.
+        const NAME_KEYS = ["اسم الطالب", "اسم المتدربة", "اسم المتدرب", "Name", "Student Name"];
+        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+        let headerRowIndex = rows.findIndex((row) =>
+          row.some((cell) => NAME_KEYS.includes(String(cell).trim()))
+        );
+        if (headerRowIndex === -1) headerRowIndex = 0;
+
+        const data = XLSX.utils.sheet_to_json(ws, { range: headerRowIndex, defval: "" });
 
         if (data.length === 0) {
           toast.error("الملف فارغ");
           return;
         }
 
-        // Map data based on the provided sample structure
-        // Headers found: ["م","رقم الشهادة","معرف الطالب","اسم الطالب","اسم الدورة","اسم المدرب","تاريخ الإنشاء","تاريخ الإصدار","رابط الشهادة","رابط التحقق"]
+        // Map data based on known header variants
         const mappedData = data.map((row) => ({
-          studentName: row["اسم الطالب"] || row["Name"] || row["Student Name"] || "",
+          studentName: row["اسم الطالب"] || row["اسم المتدربة"] || row["اسم المتدرب"] || row["Name"] || row["Student Name"] || "",
           courseName: row["اسم الدورة"] || row["Course"] || row["Course Name"] || "",
           trainerName: row["اسم المدرب"] || row["Trainer"] || row["Trainer Name"] || batchTrainerName,
+          certificateNumber: String(row["رقم الشهادة"] || row["Certificate Number"] || row["Certificate No"] || "").trim() || undefined,
         })).filter(item => item.studentName && item.courseName);
 
         if (mappedData.length === 0) {
@@ -171,6 +181,7 @@ export default function GenerateCertificate() {
           traineeName: item.studentName,
           courseName: item.courseName,
           trainerName: item.trainerName || batchTrainerName.trim() || "شوق الجهني",
+          certificateNumber: item.certificateNumber,
         }));
       } else {
         const lines = batchData.trim().split('\n').filter(line => line.trim());
@@ -507,6 +518,7 @@ export default function GenerateCertificate() {
                               <th className="p-2 text-sm font-bold border-b border-blue-200">الاسم</th>
                               <th className="p-2 text-sm font-bold border-b border-blue-200">الدورة</th>
                               <th className="p-2 text-sm font-bold border-b border-blue-200">المدرب</th>
+                              <th className="p-2 text-sm font-bold border-b border-blue-200">رقم الشهادة</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -515,6 +527,7 @@ export default function GenerateCertificate() {
                                 <td className="p-2 text-sm">{row.studentName}</td>
                                 <td className="p-2 text-sm">{row.courseName}</td>
                                 <td className="p-2 text-sm">{row.trainerName}</td>
+                                <td className="p-2 text-sm">{row.certificateNumber || "— (سيتم توليده)"}</td>
                               </tr>
                             ))}
                           </tbody>

@@ -23,4 +23,19 @@ api.interceptors.request.use(
   }
 );
 
+// لو التوكن منتهي/غير صالح، امسحه ورجّع المستخدم لصفحة الدخول بدل ما يفشل بصمت
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      Cookies.remove('authToken');
+      if (!window.location.pathname.includes('/dashboard/login')) {
+        window.location.href = '/dashboard/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default api;
